@@ -90,3 +90,17 @@ p{
 .links a:hover{
     text-decoration:underline;
 }
+
+select{
+    width:100%;
+    padding:12px;
+    border:1px solid #c4c0d5;
+    border-radius:10px;
+    box-sizing:border-box;
+    background:white;
+}
+
+.login-card{
+    max-height:90vh;
+    overflow-y:auto;
+}
