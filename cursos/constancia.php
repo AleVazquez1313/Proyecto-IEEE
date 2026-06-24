@@ -1,6 +1,7 @@
 <?php
 require_once '../includes/auth.php';
 require_once '../includes/conexion.php';
+require_once '../includes/progreso.php';
 requireLogin();
 
 $pageTitle  = 'Constancia';
@@ -9,8 +10,15 @@ $pageActive = 'constancia';
 $u = usuarioActual();
 $nombreUsuario = $u['nombre'];
 $nombreCurso   = 'ABC de la Función Electoral';
-$fecha = '09 de mayo de 2026';
+$fecha = date('d') . ' de ' . [
+    1=>'enero',2=>'febrero',3=>'marzo',4=>'abril',5=>'mayo',6=>'junio',
+    7=>'julio',8=>'agosto',9=>'septiembre',10=>'octubre',11=>'noviembre',12=>'diciembre'
+][(int) date('n')] . ' de ' . date('Y');
 $folio = 'IEEQ-2026-' . str_pad((string) ($u['id'] ?? 1), 5, '0', STR_PAD_LEFT);
+
+$desbloqueada = constanciaDesbloqueada();
+$porcentaje   = progresoPorcentaje();
+$requisitos   = requisitosConstancia();
 
 $breadcrumb = [
     ['label' => 'Inicio', 'href' => '/dashboard/dashboard.php'],
@@ -30,15 +38,60 @@ include '../includes/header.php';
 
                 <div class="cons-bar">
                     <h2 class="cons-heading">Tu constancia de participación</h2>
-                    <button onclick="window.print()" class="btn btn-primary">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        Descargar PDF
-                    </button>
+                    <?php if ($desbloqueada): ?>
+                        <button onclick="window.print()" class="btn btn-primary">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Descargar PDF
+                        </button>
+                    <?php else: ?>
+                        <span class="cons-locked-tag">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            Bloqueada
+                        </span>
+                    <?php endif; ?>
                 </div>
 
-                <div class="certificate" id="certificado">
-                    <div class="cert-stripe"></div>
-                    <div class="cert-inner">
+                <?php if (!$desbloqueada): ?>
+                    <div class="cons-progress-panel">
+                        <div class="cons-pp-head">
+                            <div class="cons-pp-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            </div>
+                            <div>
+                                <p class="cons-pp-title">Aún no has desbloqueado tu constancia</p>
+                                <p class="cons-pp-sub">Completa todos los requisitos del curso para obtenerla.</p>
+                            </div>
+                            <span class="cons-pp-pct"><?= $porcentaje ?>%</span>
+                        </div>
+                        <div class="cons-pp-track"><div class="cons-pp-fill" style="width:<?= $porcentaje ?>%"></div></div>
+                        <ul class="cons-pp-list">
+                            <?php foreach ($requisitos as $r): ?>
+                                <li class="<?= $r['completo'] ? 'done' : '' ?>">
+                                    <span class="cons-pp-check">
+                                        <?php if ($r['completo']): ?>
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                        <?php endif; ?>
+                                    </span>
+                                    <?= htmlspecialchars($r['etiqueta']) ?>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                <?php endif; ?>
+
+                <div class="cert-shell <?= $desbloqueada ? '' : 'cert-locked' ?>">
+                    <?php if (!$desbloqueada): ?>
+                        <div class="cert-lock-overlay">
+                            <div class="cert-lock-badge">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            </div>
+                            <p class="cert-lock-text">Constancia bloqueada</p>
+                            <p class="cert-lock-sub">Termina el curso para revelarla</p>
+                        </div>
+                    <?php endif; ?>
+                    <div class="certificate" id="certificado">
+                        <div class="cert-stripe"></div>
+                        <div class="cert-inner">
                         <div class="cert-head">
                             <div class="cert-org">
                                 <div class="cert-logo">
@@ -86,6 +139,7 @@ include '../includes/header.php';
                         </div>
                     </div>
                     <div class="cert-stripe"></div>
+                </div>
                 </div>
 
             </div>
@@ -200,10 +254,165 @@ include '../includes/header.php';
     .cert-qr-box svg { width: 30px; height: 30px; }
     .cert-qr-label { font-size: 0.62rem; color: var(--text3); }
 
+    .cons-locked-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: rgba(192, 57, 43, 0.08);
+        border: 1px solid rgba(192, 57, 43, 0.2);
+        color: var(--red);
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 8px 15px;
+        border-radius: var(--radius-sm);
+    }
+    .cons-locked-tag svg { width: 16px; height: 16px; }
+
+    .cons-progress-panel {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-sm);
+        padding: 1.5rem 1.7rem;
+        margin-bottom: 1.5rem;
+        max-width: 720px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .cons-pp-head {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 1.1rem;
+    }
+    .cons-pp-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        background: rgba(116, 20, 132, 0.08);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .cons-pp-icon svg { width: 22px; height: 22px; }
+    .cons-pp-title { font-family: var(--font-display); font-size: 0.98rem; font-weight: 600; color: var(--text); }
+    .cons-pp-sub { font-size: 0.8rem; color: var(--text3); margin-top: 2px; }
+    .cons-pp-pct {
+        margin-left: auto;
+        font-family: var(--font-display);
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+    .cons-pp-track {
+        height: 8px;
+        background: var(--surface3);
+        border-radius: 5px;
+        overflow: hidden;
+        margin-bottom: 1.3rem;
+    }
+    .cons-pp-fill {
+        height: 100%;
+        border-radius: 5px;
+        background: linear-gradient(90deg, var(--primary), var(--pink));
+        transition: width 0.6s ease;
+    }
+    .cons-pp-list {
+        list-style: none;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.7rem 1.4rem;
+    }
+    .cons-pp-list li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.84rem;
+        color: var(--text2);
+    }
+    .cons-pp-check {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 1.5px solid #d2cae0;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        transition: all 0.2s;
+    }
+    .cons-pp-check svg { width: 12px; height: 12px; }
+    .cons-pp-list li.done { color: var(--text); font-weight: 500; }
+    .cons-pp-list li.done .cons-pp-check {
+        background: var(--green);
+        border-color: var(--green);
+    }
+
+    .cert-shell {
+        position: relative;
+        max-width: 720px;
+        margin: 0 auto;
+    }
+    .cert-shell.cert-locked .certificate {
+        filter: blur(7px) grayscale(0.4);
+        opacity: 0.65;
+        transform: scale(0.99);
+        pointer-events: none;
+        user-select: none;
+    }
+    .cert-lock-overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 5;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+    }
+    .cert-lock-badge {
+        width: 76px;
+        height: 76px;
+        border-radius: 50%;
+        background: rgba(13, 10, 18, 0.82);
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        margin-bottom: 0.9rem;
+        box-shadow: 0 12px 36px rgba(13, 10, 18, 0.4);
+    }
+    .cert-lock-badge svg { width: 34px; height: 34px; }
+    .cert-lock-text {
+        font-family: var(--font-display);
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.9);
+        padding: 4px 16px;
+        border-radius: 20px;
+    }
+    .cert-lock-sub {
+        font-size: 0.82rem;
+        color: var(--text2);
+        background: rgba(255, 255, 255, 0.85);
+        padding: 3px 12px;
+        border-radius: 16px;
+    }
+
+    @media (max-width: 600px) {
+        .cons-pp-list { grid-template-columns: 1fr; }
+    }
+
     @media print {
-        .sidebar, .topbar, .cons-bar { display: none !important; }
+        .sidebar, .topbar, .cons-bar, .cons-progress-panel, .cert-lock-overlay { display: none !important; }
         .main-content { overflow: visible; }
         .page-content { padding: 0; overflow: visible; }
+        .cert-shell.cert-locked .certificate { filter: none; opacity: 1; transform: none; }
         .certificate { box-shadow: none; max-width: 100%; border: 1px solid #ddd; }
         body { background: #fff; }
     }

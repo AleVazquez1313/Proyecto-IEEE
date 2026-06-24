@@ -17,7 +17,7 @@ $confirmPassword = $_POST['confirm_password'] ?? '';
 
 $_SESSION['registro_old'] = compact('nombre', 'apellidos', 'email', 'genero', 'telefono');
 
-if ($nombre === '' || $apellidos === '' || $email === '' || $password === '') {
+if ($nombre === '' || $apellidos === '' || $email === '' || $genero === '' || $password === '') {
     $_SESSION['registro_error'] = 'Por favor completa todos los campos obligatorios.';
     header('Location: Registro.php');
     exit;
@@ -29,8 +29,21 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit;
 }
 
-if (strlen($password) < 10) {
-    $_SESSION['registro_error'] = 'La contrasena debe tener al menos 10 caracteres.';
+if ($telefono !== '') {
+    $telDigitos = preg_replace('/\s/', '', $telefono);
+    if (!preg_match('/^\d{10}$/', $telDigitos)) {
+        $_SESSION['registro_error'] = 'El telefono debe tener 10 digitos.';
+        header('Location: Registro.php');
+        exit;
+    }
+}
+
+if (strlen($password) < 10
+    || !preg_match('/[A-Z]/', $password)
+    || !preg_match('/[a-z]/', $password)
+    || !preg_match('/[0-9]/', $password)
+    || !preg_match('/[^A-Za-z0-9]/', $password)) {
+    $_SESSION['registro_error'] = 'La contrasena debe tener al menos 10 caracteres, con mayuscula, minuscula, numero y simbolo.';
     header('Location: Registro.php');
     exit;
 }

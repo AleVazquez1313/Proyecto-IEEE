@@ -1,8 +1,12 @@
 <?php
+require_once __DIR__ . '/progreso.php';
+
 $mod    = $moduloData;
 $acento = $mod['acento'];
 $rgb    = $mod['acento_rgb'];
 $progreso = $progresoModulo ?? 0;
+
+marcarModuloVisto((int) $mod['id_modulo']);
 
 $breadcrumb = [
     ['label' => 'Inicio', 'href' => '/dashboard/dashboard.php'],
@@ -87,12 +91,21 @@ include __DIR__ . '/header.php';
                             </button>
                             <div class="unidad-temas" id="temas-<?= $unidad['id_unidad'] ?>">
                                 <?php foreach ($unidad['temas'] as $tema): ?>
-                                    <a href="/cursos/tema.php?id=<?= $tema['id_tema'] ?>" class="tema-link">
-                                        <span class="tema-bullet"></span>
-                                        <span class="tema-name"><?= htmlspecialchars($tema['nombre_tema']) ?></span>
-                                        <span class="tema-num">Tema <?= $tema['numero_tema'] ?></span>
-                                        <svg class="tema-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                                    </a>
+                                    <?php if ($esEval): ?>
+                                        <a href="/cursos/evaluacion-intro.php?id=modulo<?= $mod['id_modulo'] ?>" class="tema-link">
+                                            <span class="tema-bullet"></span>
+                                            <span class="tema-name"><?= htmlspecialchars($tema['nombre_tema']) ?></span>
+                                            <span class="tema-num">Evaluación</span>
+                                            <svg class="tema-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                                        </a>
+                                    <?php else: ?>
+                                        <a href="/cursos/tema.php?id=<?= $tema['id_tema'] ?>" class="tema-link">
+                                            <span class="tema-bullet"></span>
+                                            <span class="tema-name"><?= htmlspecialchars($tema['nombre_tema']) ?></span>
+                                            <span class="tema-num">Tema <?= $tema['numero_tema'] ?></span>
+                                            <svg class="tema-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                                        </a>
+                                    <?php endif; ?>
                                 <?php endforeach; ?>
                             </div>
                         </div>

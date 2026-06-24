@@ -1,28 +1,27 @@
 <?php
 require_once '../includes/auth.php';
 require_once '../includes/conexion.php';
+require_once '../includes/evaluaciones.php';
 requireLogin();
 
-$pageTitle  = 'Evaluación';
-$pageActive = 'evaluacion';
+$id   = $_GET['id'] ?? 'final';
+$eval = obtenerEvaluacion($id);
 
-$evaluacion = [
-    'nombre'      => 'Evaluación Parcial — Módulo I',
-    'preguntas'   => 10,
-    'intentos'    => 2,
-    'minimo'      => 80,
-    'minutos'     => 20,
-];
+if (!$eval) {
+    header('Location: /dashboard/dashboard.php');
+    exit;
+}
 
-$preguntas = [
-    ['n' => 1, 'texto' => '¿Qué caracteriza a la democracia representativa?', 'opciones' => ['La ciudadanía vota directamente cada decisión de gobierno', 'La ciudadanía elige representantes para tomar decisiones en su nombre', 'El gobierno se ejerce mediante decretos sin consulta', 'Las decisiones las toma un consejo no electo']],
-    ['n' => 2, 'texto' => '¿Cuál es un mecanismo de participación ciudadana directa en México?', 'opciones' => ['El voto en elecciones representativas', 'La consulta popular y la iniciativa ciudadana', 'La designación por el Congreso', 'La emisión de decretos presidenciales']],
-    ['n' => 3, 'texto' => '¿A qué edad se adquiere la ciudadanía en México?', 'opciones' => ['A los 16 años', 'A los 21 años', 'A los 18 años', 'A los 25 años']],
-];
+$pageTitle  = $eval['titulo'];
+$pageActive = $eval['modulo'] > 0 ? 'modulo' . $eval['modulo'] : 'evaluacion';
+$acento     = $eval['acento'];
+$rgb        = $eval['acento_rgb'];
+$preguntas  = $eval['preguntas'];
 
 $breadcrumb = [
     ['label' => 'Inicio', 'href' => '/dashboard/dashboard.php'],
-    ['label' => $evaluacion['nombre']],
+    ['label' => $eval['titulo'], 'href' => '/cursos/evaluacion-intro.php?id=' . $eval['id']],
+    ['label' => 'En curso'],
 ];
 
 include '../includes/header.php';
@@ -36,12 +35,13 @@ include '../includes/header.php';
         <div class="page-content fade-in">
             <div class="page-inner">
                 <form action="resultado.php" method="POST" id="evalForm">
+                    <input type="hidden" name="eval_id" value="<?= htmlspecialchars($eval['id']) ?>">
                     <div class="eval-grid">
 
                         <aside class="eval-side">
                             <p class="eyebrow">Preguntas</p>
-                            <div class="eval-qmap" id="qmap">
-                                <?php for ($i = 0; $i < $evaluacion['preguntas']; $i++): ?>
+                            <div class="eval-qmap">
+                                <?php for ($i = 0; $i < count($preguntas); $i++): ?>
                                     <button type="button" class="eval-qbtn <?= $i === 0 ? 'current' : '' ?>" data-q="<?= $i ?>" onclick="irPregunta(<?= $i ?>)"><?= $i + 1 ?></button>
                                 <?php endfor; ?>
                             </div>
@@ -50,19 +50,19 @@ include '../includes/header.php';
                                 <span><i class="dot current"></i> Actual</span>
                                 <span><i class="dot pending"></i> Pendiente</span>
                             </div>
-                            <div class="eval-timer">
-                                <span class="eval-timer-val" id="timer">20:00</span>
+                            <div class="eval-timer" style="background:linear-gradient(135deg, <?= $acento ?>, color-mix(in srgb, <?= $acento ?> 50%, #000));">
+                                <span class="eval-timer-val" id="timer"><?= str_pad((string) $eval['minutos'], 2, '0', STR_PAD_LEFT) ?>:00</span>
                                 <span class="eval-timer-label">tiempo restante</span>
                             </div>
                         </aside>
 
                         <div class="eval-main">
                             <div class="eval-bar">
-                                <h2 class="eval-name"><?= htmlspecialchars($evaluacion['nombre']) ?></h2>
+                                <h2 class="eval-name"><?= htmlspecialchars($eval['titulo']) ?></h2>
                                 <div class="eval-chips">
-                                    <span class="badge badge-muted"><?= $evaluacion['preguntas'] ?> preguntas</span>
-                                    <span class="badge badge-muted"><?= $evaluacion['intentos'] ?> intentos</span>
-                                    <span class="badge badge-muted">Mínimo <?= $evaluacion['minimo'] ?></span>
+                                    <span class="badge badge-muted"><?= count($preguntas) ?> preguntas</span>
+                                    <span class="badge badge-muted"><?= (int) $eval['intentos'] ?> intentos</span>
+                                    <span class="badge badge-muted">Mínimo <?= (int) $eval['minimo'] ?>%</span>
                                 </div>
                             </div>
 
@@ -86,7 +86,7 @@ include '../includes/header.php';
                                 <button type="button" class="btn btn-ghost" id="btnPrev" onclick="prev()" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg> Anterior</button>
                                 <span class="eval-foot-count" id="footCount">1 / <?= count($preguntas) ?></span>
                                 <button type="button" class="btn btn-ghost" id="btnNext" onclick="next()">Siguiente <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
-                                <button type="submit" class="btn btn-primary" id="btnFinish" style="display:none;" onclick="return confirm('¿Deseas finalizar la evaluación?')">Finalizar evaluación</button>
+                                <button type="submit" class="btn btn-primary" id="btnFinish" style="display:none;background:<?= $acento ?>;" onclick="return confirm('¿Deseas finalizar la evaluación? Ya no podrás cambiar tus respuestas.')">Finalizar evaluación</button>
                             </div>
                         </div>
 
@@ -132,14 +132,9 @@ include '../includes/header.php';
     .eval-legend .dot.answered { background: var(--primary); }
     .eval-legend .dot.current { border: 2px solid var(--primary); background: rgba(116, 20, 132, 0.08); }
     .eval-legend .dot.pending { background: var(--surface3); border: 1px solid var(--border); }
-    .eval-timer {
-        background: linear-gradient(135deg, var(--dark), #1a0d24);
-        border-radius: var(--radius-sm);
-        padding: 0.95rem;
-        text-align: center;
-    }
+    .eval-timer { border-radius: var(--radius-sm); padding: 0.95rem; text-align: center; }
     .eval-timer-val { display: block; font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; color: #fff; }
-    .eval-timer-label { font-size: 0.66rem; color: rgba(255, 255, 255, 0.45); }
+    .eval-timer-label { font-size: 0.66rem; color: rgba(255, 255, 255, 0.6); }
     .eval-main { display: flex; flex-direction: column; gap: 1.1rem; }
     .eval-bar {
         background: #fff;
@@ -209,7 +204,7 @@ include '../includes/header.php';
     const total = <?= count($preguntas) ?>;
     let actual = 0;
     const respondidas = new Array(total).fill(false);
-    let segundos = <?= $evaluacion['minutos'] ?> * 60;
+    let segundos = <?= (int) $eval['minutos'] ?> * 60;
 
     function irPregunta(i) {
         document.querySelector('[data-qpanel="' + actual + '"]').classList.add('hidden');

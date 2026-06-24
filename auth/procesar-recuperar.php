@@ -21,6 +21,7 @@ if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit;
 }
 
+
 if (DB_ACTIVA && $pdo) {
     try {
         $stmt = $pdo->prepare('SELECT id_persona FROM aprende_persona WHERE email = ? LIMIT 1');

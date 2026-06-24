@@ -16,6 +16,13 @@ if ($email === '' || $password === '') {
     exit;
 }
 
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    $_SESSION['login_error'] = 'Ingresa un correo electronico valido.';
+    header('Location: Login.php');
+    exit;
+}
+
+
 if (DB_ACTIVA && $pdo) {
     try {
         $stmt = $pdo->prepare('SELECT id_persona, nombre, email, password FROM aprende_persona WHERE email = ? LIMIT 1');

@@ -2,6 +2,9 @@
 $u = usuarioActual();
 $pageActive = $pageActive ?? '';
 
+require_once __DIR__ . '/progreso.php';
+$progresoReal = progresoPorcentaje();
+
 $nav = [
     'General' => [
         ['key' => 'inicio',        'label' => 'Inicio',        'href' => '/dashboard/dashboard.php',    'icon' => '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>'],
@@ -15,7 +18,7 @@ $nav = [
         ['key' => 'modulo3', 'label' => 'Módulo III. Elecciones',       'href' => '/modulos/modulo_3.php', 'icon' => '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>'],
     ],
     'Evaluación' => [
-        ['key' => 'evaluacion',     'label' => 'Evaluación Final', 'href' => '/cursos/evaluacion.php',     'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/>'],
+        ['key' => 'evaluacion',     'label' => 'Evaluación Final', 'href' => '/cursos/evaluacion-intro.php?id=final',     'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/>'],
         ['key' => 'calificaciones', 'label' => 'Calificaciones',   'href' => '/cursos/calificaciones.php', 'icon' => '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>'],
         ['key' => 'constancia',     'label' => 'Constancia',       'href' => '/cursos/constancia.php',     'icon' => '<circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/>'],
         ['key' => 'perfil',         'label' => 'Mi Perfil',        'href' => '/cursos/perfil.php',         'icon' => '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'],
@@ -40,10 +43,10 @@ $nav = [
         <div class="sb-progress">
             <div class="sb-prog-label">
                 <span>Progreso del curso</span>
-                <strong><?= (int) $u['progreso'] ?>%</strong>
+                <strong><?= $progresoReal ?>%</strong>
             </div>
             <div class="sb-prog-track">
-                <div class="sb-prog-fill" style="width:<?= (int) $u['progreso'] ?>%"></div>
+                <div class="sb-prog-fill" style="width:<?= $progresoReal ?>%"></div>
             </div>
         </div>
     </div>

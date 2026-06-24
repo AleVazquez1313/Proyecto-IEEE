@@ -9,6 +9,9 @@ $idTema = (int) ($_GET['id'] ?? 10);
 $catalogo = [];
 foreach ([datosModulo2(), datosModulo3()] as $mod) {
     foreach ($mod['unidades'] as $unidad) {
+        if (!empty($unidad['es_evaluacion'])) {
+            continue;
+        }
         foreach ($unidad['temas'] as $pos => $tema) {
             $catalogo[$tema['id_tema']] = [
                 'tema'        => $tema,
@@ -111,7 +114,7 @@ include '../includes/header.php';
             <?php if ($siguiente): ?>
                 <a href="/cursos/tema.php?id=<?= $siguiente ?>" class="btn btn-primary">Siguiente <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></a>
             <?php else: ?>
-                <a href="/cursos/evaluacion.php" class="btn btn-primary">Ir a evaluación <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></a>
+                <a href="/cursos/evaluacion-intro.php?id=modulo<?= $ctx['id_modulo'] ?>" class="btn btn-primary">Ir a evaluación <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></a>
             <?php endif; ?>
         </div>
     </div>
