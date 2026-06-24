@@ -7,15 +7,11 @@ $pageTitle  = 'Mis Calificaciones';
 $pageActive = 'calificaciones';
 
 $calificaciones = [
-    ['modulo' => 'Módulo I. Conceptos clave',      'evaluacion' => 'Evaluación Parcial', 'fecha' => '07/05/2026', 'puntaje' => 85,   'minimo' => 80, 'intentos' => '1 / 2'],
-    ['modulo' => 'Módulo II. Sistema político',     'evaluacion' => 'Evaluación Parcial', 'fecha' => '09/05/2026', 'puntaje' => 90,   'minimo' => 80, 'intentos' => '1 / 2'],
-    ['modulo' => 'Módulo III. Elecciones',          'evaluacion' => 'Evaluación Parcial', 'fecha' => null,          'puntaje' => null, 'minimo' => 80, 'intentos' => '0 / 2'],
-    ['modulo' => 'Evaluación general del curso',    'evaluacion' => 'Evaluación Final',   'fecha' => null,          'puntaje' => null, 'minimo' => 80, 'intentos' => '0 / 1'],
+    ['modulo' => 'Módulo II. Sistema Político-Electoral', 'evaluacion' => 'Evaluación de módulo', 'eval_id' => 'modulo2', 'minimo' => 80, 'intentos' => '0 / 2'],
+    ['modulo' => 'Módulo III. Elecciones',                'evaluacion' => 'Evaluación de módulo', 'eval_id' => 'modulo3', 'minimo' => 80, 'intentos' => '0 / 2'],
+    ['modulo' => 'Evaluación Final del curso',            'evaluacion' => 'Evaluación final',    'eval_id' => 'final',   'minimo' => 80, 'intentos' => '0 / 2'],
 ];
 
-$puntajes = array_filter(array_column($calificaciones, 'puntaje'), fn($p) => $p !== null);
-$promedio = !empty($puntajes) ? round(array_sum($puntajes) / count($puntajes), 1) : 0;
-$aprobadas = count(array_filter($puntajes, fn($p) => $p >= 80));
 $progreso = usuarioActual()['progreso'];
 
 $breadcrumb = [
@@ -43,14 +39,14 @@ include '../includes/header.php';
                         <div class="cal-sum-track"><div class="cal-sum-fill" style="width:<?= $progreso ?>%"></div></div>
                     </div>
                     <div class="cal-sum-card">
-                        <p class="cal-sum-label">Promedio general</p>
-                        <p class="cal-sum-val" style="color:var(--green)"><?= $promedio ?: '—' ?></p>
-                        <p class="cal-sum-note">de evaluaciones realizadas</p>
+                        <p class="cal-sum-label">Evaluaciones</p>
+                        <p class="cal-sum-val" style="color:var(--blue)"><?= count($calificaciones) ?></p>
+                        <p class="cal-sum-note">disponibles en el curso</p>
                     </div>
                     <div class="cal-sum-card">
-                        <p class="cal-sum-label">Evaluaciones aprobadas</p>
-                        <p class="cal-sum-val"><?= $aprobadas ?> / <?= count($calificaciones) ?></p>
-                        <p class="cal-sum-note">completadas</p>
+                        <p class="cal-sum-label">Mínimo aprobatorio</p>
+                        <p class="cal-sum-val" style="color:var(--green)">80%</p>
+                        <p class="cal-sum-note">en cada evaluación</p>
                     </div>
                 </div>
 
@@ -58,30 +54,19 @@ include '../includes/header.php';
                     <div class="cal-thead">
                         <span>Módulo</span>
                         <span>Evaluación</span>
-                        <span>Fecha</span>
-                        <span>Calificación</span>
+                        <span>Mínimo</span>
                         <span>Estatus</span>
                         <span>Intentos</span>
+                        <span></span>
                     </div>
-                    <?php foreach ($calificaciones as $cal):
-                        $p = $cal['puntaje'];
-                        $aprob = $p !== null && $p >= $cal['minimo'];
-                    ?>
+                    <?php foreach ($calificaciones as $cal): ?>
                         <div class="cal-row">
                             <span class="cal-mod"><?= htmlspecialchars($cal['modulo']) ?></span>
                             <span class="cal-cell"><?= htmlspecialchars($cal['evaluacion']) ?></span>
-                            <span class="cal-cell muted"><?= $cal['fecha'] ?? '—' ?></span>
-                            <span class="cal-score" style="color:<?= $p === null ? 'var(--text3)' : ($aprob ? 'var(--green)' : 'var(--red)') ?>"><?= $p ?? '—' ?></span>
-                            <span>
-                                <?php if ($p === null): ?>
-                                    <span class="badge badge-muted">Pendiente</span>
-                                <?php elseif ($aprob): ?>
-                                    <span class="badge badge-success">Aprobado</span>
-                                <?php else: ?>
-                                    <span class="badge badge-danger">Reprobado</span>
-                                <?php endif; ?>
-                            </span>
-                            <span class="cal-cell muted"><?= $cal['intentos'] ?></span>
+                            <span class="cal-cell muted"><?= (int) $cal['minimo'] ?>%</span>
+                            <span><span class="badge badge-muted">Pendiente</span></span>
+                            <span class="cal-cell muted"><?= htmlspecialchars($cal['intentos']) ?></span>
+                            <span><a href="/cursos/evaluacion-intro.php?id=<?= htmlspecialchars($cal['eval_id']) ?>" class="cal-go">Presentar</a></span>
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -133,7 +118,7 @@ include '../includes/header.php';
     }
     .cal-thead, .cal-row {
         display: grid;
-        grid-template-columns: 2.4fr 1.2fr 1fr 1fr 1.1fr 0.9fr;
+        grid-template-columns: 2.4fr 1.4fr 0.8fr 1.1fr 0.9fr 1fr;
         align-items: center;
         gap: 0.5rem;
         padding: 0.85rem 1.35rem;
@@ -156,6 +141,18 @@ include '../includes/header.php';
     .cal-cell { font-size: 0.81rem; color: var(--text2); }
     .cal-cell.muted { color: var(--text3); }
     .cal-score { font-family: var(--font-display); font-size: 0.92rem; font-weight: 700; }
+    .cal-go {
+        font-size: 0.74rem;
+        font-weight: 600;
+        color: var(--primary);
+        background: rgba(116, 20, 132, 0.07);
+        border: 1px solid rgba(116, 20, 132, 0.15);
+        border-radius: 7px;
+        padding: 5px 13px;
+        transition: all var(--transition);
+        white-space: nowrap;
+    }
+    .cal-go:hover { background: var(--primary); color: #fff; }
     @media (max-width: 820px) {
         .cal-summary { grid-template-columns: 1fr; }
         .cal-thead { display: none; }

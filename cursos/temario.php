@@ -2,7 +2,10 @@
 require_once '../includes/auth.php';
 require_once '../includes/conexion.php';
 require_once '../includes/datos.php';
+require_once '../includes/progreso.php';
 requireLogin();
+
+marcarModuloVisto(1);
 
 $pageTitle  = 'Temario';
 $pageActive = 'temario';

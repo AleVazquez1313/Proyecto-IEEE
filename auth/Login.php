@@ -56,21 +56,23 @@ unset($_SESSION['login_error']);
                 </div>
             <?php endif; ?>
 
-            <form action="procesar-login.php" method="POST">
+            <form action="procesar-login.php" method="POST" id="loginForm" novalidate>
                 <div class="form-group">
                     <label class="form-label">Correo electrónico</label>
-                    <input class="form-input" type="email" name="email" placeholder="tucorreo@ejemplo.com" required autocomplete="email">
+                    <input class="form-input" type="email" name="email" id="email" placeholder="tucorreo@ejemplo.com" autocomplete="email">
+                    <span class="field-error" id="emailError"></span>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Contraseña</label>
                     <div class="pw-wrap">
-                        <input class="form-input" type="password" name="password" id="pw" placeholder="Ingresa tu contraseña" required autocomplete="current-password">
+                        <input class="form-input" type="password" name="password" id="pw" placeholder="Ingresa tu contraseña" autocomplete="current-password">
                         <button type="button" class="pw-eye" onclick="togglePw()" aria-label="Mostrar contraseña">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
                             </svg>
                         </button>
                     </div>
+                    <span class="field-error" id="pwError"></span>
                 </div>
                 <button type="submit" class="btn btn-primary btn-full">Iniciar sesión</button>
             </form>
@@ -97,6 +99,64 @@ unset($_SESSION['login_error']);
             const pw = document.getElementById('pw');
             pw.type = pw.type === 'password' ? 'text' : 'password';
         }
+
+        const form = document.getElementById('loginForm');
+        const email = document.getElementById('email');
+        const pw = document.getElementById('pw');
+        const emailError = document.getElementById('emailError');
+        const pwError = document.getElementById('pwError');
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        function validarEmail(mostrar) {
+            const val = email.value.trim();
+            if (val === '') {
+                if (mostrar) setError(email, emailError, 'Ingresa tu correo electrónico.');
+                return false;
+            }
+            if (!emailRegex.test(val)) {
+                if (mostrar) setError(email, emailError, 'Ingresa un correo electrónico válido.');
+                return false;
+            }
+            setOk(email, emailError);
+            return true;
+        }
+
+        function validarPw(mostrar) {
+            if (pw.value === '') {
+                if (mostrar) setError(pw, pwError, 'Ingresa tu contraseña.');
+                return false;
+            }
+            setOk(pw, pwError);
+            return true;
+        }
+
+        function setError(input, span, msg) {
+            input.classList.add('input-error');
+            input.classList.remove('input-ok');
+            span.textContent = msg;
+            span.classList.add('show');
+        }
+
+        function setOk(input, span) {
+            input.classList.remove('input-error');
+            input.classList.add('input-ok');
+            span.textContent = '';
+            span.classList.remove('show');
+        }
+
+        email.addEventListener('input', () => validarEmail(true));
+        pw.addEventListener('input', () => validarPw(true));
+
+        form.addEventListener('submit', (e) => {
+            const okEmail = validarEmail(true);
+            const okPw = validarPw(true);
+            if (!okEmail || !okPw) {
+                e.preventDefault();
+                if (!okEmail) email.focus();
+                else pw.focus();
+            }
+        });
     </script>
 </body>
 </html>

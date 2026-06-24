@@ -1,47 +1,55 @@
 <?php
 require_once '../includes/auth.php';
 require_once '../includes/conexion.php';
+require_once '../includes/evaluaciones.php';
+require_once '../includes/progreso.php';
 requireLogin();
 
-$pageTitle  = 'Resultado de la Evaluación';
-$pageActive = 'evaluacion';
+$id   = $_POST['eval_id'] ?? ($_GET['id'] ?? 'final');
+$eval = obtenerEvaluacion($id);
 
-$respuestasCorrectas = [0 => 1, 1 => 1, 2 => 2];
-$totalPreguntas = 10;
-$minimo = 80;
-
-$aciertos = 0;
-$contestadas = 0;
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    foreach ($respuestasCorrectas as $i => $correcta) {
-        if (isset($_POST['q' . $i])) {
-            $contestadas++;
-            if ((int) $_POST['q' . $i] === $correcta) {
-                $aciertos++;
-            }
-        }
-    }
-    $totalEvaluadas = count($respuestasCorrectas);
-    $puntaje = $totalEvaluadas > 0 ? (int) round(($aciertos / $totalEvaluadas) * 100) : 0;
-} else {
-    $puntaje = 85;
-    $aciertos = 9;
-    $totalEvaluadas = $totalPreguntas;
+if (!$eval) {
+    header('Location: /dashboard/dashboard.php');
+    exit;
 }
 
-$errores  = $totalEvaluadas - $aciertos;
+$pageTitle  = 'Resultado de la Evaluación';
+$pageActive = $eval['modulo'] > 0 ? 'modulo' . $eval['modulo'] : 'evaluacion';
+
+$preguntas = $eval['preguntas'];
+$totalPreguntas = count($preguntas);
+$minimo = (int) $eval['minimo'];
+
+$aciertos = 0;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    foreach ($preguntas as $i => $p) {
+        if (isset($_POST['q' . $i]) && (int) $_POST['q' . $i] === (int) $p['correcta']) {
+            $aciertos++;
+        }
+    }
+} else {
+    $aciertos = $totalPreguntas;
+}
+
+$puntaje  = $totalPreguntas > 0 ? (int) round(($aciertos / $totalPreguntas) * 100) : 0;
+$errores  = $totalPreguntas - $aciertos;
 $aprobado = $puntaje >= $minimo;
-$intentoActual = 1;
-$intentosMax = 2;
+
+if ($aprobado) {
+    marcarEvaluacionAprobada($eval['id']);
+}
 
 $circ = 2 * M_PI * 52;
 $dash = ($puntaje / 100) * $circ;
 $color = $aprobado ? 'var(--green)' : 'var(--red)';
 
+$esFinal       = $eval['id'] === 'final';
+$siguienteMod  = $eval['modulo'] + 1;
+$haySiguiente  = $eval['modulo'] > 0 && $siguienteMod <= 3;
+
 $breadcrumb = [
     ['label' => 'Inicio', 'href' => '/dashboard/dashboard.php'],
-    ['label' => 'Evaluación', 'href' => '/cursos/evaluacion.php'],
+    ['label' => $eval['titulo'], 'href' => '/cursos/evaluacion-intro.php?id=' . $eval['id']],
     ['label' => 'Resultado'],
 ];
 
@@ -56,7 +64,7 @@ include '../includes/header.php';
         <div class="page-content fade-in">
             <div class="res-wrap">
                 <div class="res-card">
-                    <p class="res-eyebrow">Evaluación Parcial &middot; Módulo I</p>
+                    <p class="res-eyebrow"><?= htmlspecialchars($eval['titulo']) ?></p>
 
                     <div class="res-donut">
                         <svg viewBox="0 0 120 120">
@@ -83,7 +91,7 @@ include '../includes/header.php';
                             <span class="res-stat-label">Errores</span>
                         </div>
                         <div class="res-stat">
-                            <span class="res-stat-val"><?= $totalEvaluadas ?></span>
+                            <span class="res-stat-val"><?= $totalPreguntas ?></span>
                             <span class="res-stat-label">Preguntas</span>
                         </div>
                     </div>
@@ -91,19 +99,29 @@ include '../includes/header.php';
                     <?php if (!$aprobado): ?>
                         <div class="res-alert">
                             <p class="res-alert-title">No alcanzaste el puntaje mínimo</p>
-                            <p class="res-alert-text">Necesitas <strong><?= $minimo ?> puntos</strong> para aprobar. Llevas el intento <?= $intentoActual ?> de <?= $intentosMax ?>. Te recomendamos repasar el módulo antes de volver a intentarlo.</p>
+                            <p class="res-alert-text">Necesitas <strong><?= $minimo ?>%</strong> para aprobar. Te recomendamos repasar el contenido antes de volver a intentarlo. Recuerda que cuentas con <?= (int) $eval['intentos'] ?> intentos.</p>
                         </div>
                     <?php else: ?>
                         <div class="res-success">
-                            <p class="res-success-text">Has demostrado dominio del contenido de este módulo. Puedes continuar con el siguiente o consultar tu constancia al finalizar el curso.</p>
+                            <p class="res-success-text">
+                                <?php if ($esFinal): ?>
+                                    Has aprobado la evaluación final del curso. Ya puedes descargar tu constancia de participación.
+                                <?php else: ?>
+                                    Has demostrado dominio del contenido de este módulo. Puedes continuar con el siguiente.
+                                <?php endif; ?>
+                            </p>
                         </div>
                     <?php endif; ?>
 
                     <div class="res-actions">
-                        <?php if ($aprobado): ?>
-                            <a href="/modulos/modulo_2.php" class="btn btn-primary btn-full">Continuar al siguiente módulo</a>
+                        <?php if (!$aprobado): ?>
+                            <a href="/cursos/evaluacion.php?id=<?= htmlspecialchars($eval['id']) ?>" class="btn btn-danger btn-full">Intentar de nuevo</a>
+                        <?php elseif ($esFinal): ?>
+                            <a href="/cursos/constancia.php" class="btn btn-primary btn-full">Ver mi constancia</a>
+                        <?php elseif ($haySiguiente): ?>
+                            <a href="/modulos/modulo_<?= $siguienteMod ?>.php" class="btn btn-primary btn-full">Continuar al siguiente módulo</a>
                         <?php else: ?>
-                            <a href="/cursos/evaluacion.php" class="btn btn-danger btn-full">Intentar de nuevo</a>
+                            <a href="/cursos/evaluacion-intro.php?id=final" class="btn btn-primary btn-full">Ir a la evaluación final</a>
                         <?php endif; ?>
                         <a href="/cursos/calificaciones.php" class="btn btn-outline btn-full">Ver mis calificaciones</a>
                     </div>
@@ -130,12 +148,7 @@ include '../includes/header.php';
         letter-spacing: 0.6px;
         margin-bottom: 1.3rem;
     }
-    .res-donut {
-        width: 130px;
-        height: 130px;
-        position: relative;
-        margin: 0 auto 1.1rem;
-    }
+    .res-donut { width: 130px; height: 130px; position: relative; margin: 0 auto 1.1rem; }
     .res-donut svg { width: 130px; height: 130px; }
     .res-donut-center {
         position: absolute;
@@ -147,17 +160,8 @@ include '../includes/header.php';
     }
     .res-score { font-family: var(--font-display); font-size: 1.85rem; font-weight: 700; line-height: 1; }
     .res-of { font-size: 0.7rem; color: var(--text3); margin-top: 2px; }
-    .res-stats {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 0.75rem;
-        margin-bottom: 1.3rem;
-    }
-    .res-stat {
-        background: var(--surface2);
-        border-radius: var(--radius-sm);
-        padding: 0.85rem;
-    }
+    .res-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.3rem; }
+    .res-stat { background: var(--surface2); border-radius: var(--radius-sm); padding: 0.85rem; }
     .res-stat-val { display: block; font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; }
     .res-stat-label { font-size: 0.7rem; color: var(--text3); }
     .res-alert {

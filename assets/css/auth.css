@@ -380,3 +380,91 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+.field-error {
+    display: none;
+    font-size: 0.74rem;
+    color: var(--red);
+    margin-top: 5px;
+    line-height: 1.4;
+}
+
+.field-error.show {
+    display: block;
+    animation: fadeUp 0.2s ease;
+}
+
+.form-input.input-error,
+.form-select.input-error {
+    border-color: var(--red);
+}
+
+.form-input.input-error:focus,
+.form-select.input-error:focus {
+    box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.1);
+}
+
+.form-input.input-ok,
+.form-select.input-ok {
+    border-color: var(--green);
+}
+
+.form-input.input-ok:focus,
+.form-select.input-ok:focus {
+    box-shadow: 0 0 0 3px rgba(10, 140, 77, 0.1);
+}
+
+.pw-checklist {
+    list-style: none;
+    margin: 0.7rem 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px 14px;
+}
+
+.pw-checklist li {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.72rem;
+    color: var(--text3);
+    transition: color 0.2s;
+}
+
+.pw-check-dot {
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    border: 1.5px solid #d2cae0;
+    flex-shrink: 0;
+    position: relative;
+    transition: all 0.2s;
+}
+
+.pw-checklist li.done {
+    color: var(--green);
+}
+
+.pw-checklist li.done .pw-check-dot {
+    background: var(--green);
+    border-color: var(--green);
+}
+
+.pw-checklist li.done .pw-check-dot::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -55%) rotate(45deg);
+    width: 3px;
+    height: 6px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+}
+
+@media (max-width: 520px) {
+    .pw-checklist {
+        grid-template-columns: 1fr;
+    }
+}

@@ -53,21 +53,24 @@ unset($_SESSION['registro_error'], $_SESSION['registro_old']);
                 </div>
             <?php endif; ?>
 
-            <form action="procesar-registro.php" method="POST">
+            <form action="procesar-registro.php" method="POST" id="registroForm" novalidate>
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Nombre(s)</label>
-                        <input class="form-input" type="text" name="nombre" placeholder="Abraham" required value="<?= htmlspecialchars($old['nombre'] ?? '') ?>">
+                        <input class="form-input" type="text" name="nombre" id="nombre" placeholder="Abraham" value="<?= htmlspecialchars($old['nombre'] ?? '') ?>">
+                        <span class="field-error" id="nombreError"></span>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Apellidos</label>
-                        <input class="form-input" type="text" name="apellidos" placeholder="Ordaz González" required value="<?= htmlspecialchars($old['apellidos'] ?? '') ?>">
+                        <input class="form-input" type="text" name="apellidos" id="apellidos" placeholder="Ordóñez Moreno" value="<?= htmlspecialchars($old['apellidos'] ?? '') ?>">
+                        <span class="field-error" id="apellidosError"></span>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Correo electrónico</label>
-                    <input class="form-input" type="email" name="email" placeholder="tucorreo@ejemplo.com" required value="<?= htmlspecialchars($old['email'] ?? '') ?>">
+                    <input class="form-input" type="email" name="email" id="email" placeholder="tucorreo@ejemplo.com" value="<?= htmlspecialchars($old['email'] ?? '') ?>">
+                    <span class="field-error" id="emailError"></span>
                     <div class="form-note">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                         Verifica que sea un correo válido al que tengas acceso
@@ -77,33 +80,53 @@ unset($_SESSION['registro_error'], $_SESSION['registro_old']);
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Género</label>
-                        <select class="form-select" name="genero" required>
+                        <select class="form-select" name="genero" id="genero">
                             <option value="">Seleccionar...</option>
                             <option value="F"  <?= ($old['genero'] ?? '') === 'F'  ? 'selected' : '' ?>>Femenino</option>
                             <option value="M"  <?= ($old['genero'] ?? '') === 'M'  ? 'selected' : '' ?>>Masculino</option>
                             <option value="NB" <?= ($old['genero'] ?? '') === 'NB' ? 'selected' : '' ?>>No binario</option>
                             <option value="ND" <?= ($old['genero'] ?? '') === 'ND' ? 'selected' : '' ?>>Prefiero no decirlo</option>
                         </select>
+                        <span class="field-error" id="generoError"></span>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Teléfono</label>
-                        <input class="form-input" type="tel" name="telefono" placeholder="442 000 0000" value="<?= htmlspecialchars($old['telefono'] ?? '') ?>">
+                        <input class="form-input" type="tel" name="telefono" id="telefono" placeholder="442 000 0000" maxlength="14" value="<?= htmlspecialchars($old['telefono'] ?? '') ?>">
+                        <span class="field-error" id="telefonoError"></span>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Contraseña</label>
-                    <input class="form-input" type="password" name="password" id="pw" placeholder="Crea una contraseña segura" required oninput="checkStrength(this.value)">
+                    <div class="pw-wrap">
+                        <input class="form-input" type="password" name="password" id="pw" placeholder="Crea una contraseña segura">
+                        <button type="button" class="pw-eye" onclick="togglePw('pw')" aria-label="Mostrar contraseña">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </button>
+                    </div>
                     <div class="strength-wrap">
                         <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
                         <span class="strength-text" id="strengthText">Ingresa una contraseña</span>
                     </div>
-                    <p class="pw-hint">Mínimo 10 caracteres con mayúsculas, minúsculas, números y símbolos.</p>
+                    <ul class="pw-checklist" id="pwChecklist">
+                        <li data-rule="len"><span class="pw-check-dot"></span>Al menos 10 caracteres</li>
+                        <li data-rule="upper"><span class="pw-check-dot"></span>Una letra mayúscula</li>
+                        <li data-rule="lower"><span class="pw-check-dot"></span>Una letra minúscula</li>
+                        <li data-rule="num"><span class="pw-check-dot"></span>Un número</li>
+                        <li data-rule="sym"><span class="pw-check-dot"></span>Un símbolo (!@#$...)</li>
+                    </ul>
+                    <span class="field-error" id="pwError"></span>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Confirmar contraseña</label>
-                    <input class="form-input" type="password" name="confirm_password" placeholder="Repite tu contraseña" required>
+                    <div class="pw-wrap">
+                        <input class="form-input" type="password" name="confirm_password" id="confirmPw" placeholder="Repite tu contraseña">
+                        <button type="button" class="pw-eye" onclick="togglePw('confirmPw')" aria-label="Mostrar contraseña">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </button>
+                    </div>
+                    <span class="field-error" id="confirmError"></span>
                 </div>
 
                 <button type="submit" class="btn btn-primary btn-full">Crear mi cuenta</button>
@@ -125,6 +148,99 @@ unset($_SESSION['registro_error'], $_SESSION['registro_old']);
     </main>
 
     <script>
+        function togglePw(id) {
+            const el = document.getElementById(id);
+            el.type = el.type === 'password' ? 'text' : 'password';
+        }
+
+        const form = document.getElementById('registroForm');
+        const nombre = document.getElementById('nombre');
+        const apellidos = document.getElementById('apellidos');
+        const email = document.getElementById('email');
+        const genero = document.getElementById('genero');
+        const telefono = document.getElementById('telefono');
+        const pw = document.getElementById('pw');
+        const confirmPw = document.getElementById('confirmPw');
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const soloLetras = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+$/;
+
+        function setError(input, id, msg) {
+            input.classList.add('input-error');
+            input.classList.remove('input-ok');
+            const span = document.getElementById(id);
+            span.textContent = msg;
+            span.classList.add('show');
+        }
+        function setOk(input, id) {
+            input.classList.remove('input-error');
+            input.classList.add('input-ok');
+            const span = document.getElementById(id);
+            span.textContent = '';
+            span.classList.remove('show');
+        }
+
+        function valNombre(m) {
+            const v = nombre.value.trim();
+            if (v === '') { if (m) setError(nombre, 'nombreError', 'Ingresa tu nombre.'); return false; }
+            if (v.length < 2) { if (m) setError(nombre, 'nombreError', 'El nombre es muy corto.'); return false; }
+            if (!soloLetras.test(v)) { if (m) setError(nombre, 'nombreError', 'El nombre solo debe contener letras.'); return false; }
+            setOk(nombre, 'nombreError'); return true;
+        }
+        function valApellidos(m) {
+            const v = apellidos.value.trim();
+            if (v === '') { if (m) setError(apellidos, 'apellidosError', 'Ingresa tus apellidos.'); return false; }
+            if (v.length < 2) { if (m) setError(apellidos, 'apellidosError', 'El apellido es muy corto.'); return false; }
+            if (!soloLetras.test(v)) { if (m) setError(apellidos, 'apellidosError', 'Los apellidos solo deben contener letras.'); return false; }
+            setOk(apellidos, 'apellidosError'); return true;
+        }
+        function valEmail(m) {
+            const v = email.value.trim();
+            if (v === '') { if (m) setError(email, 'emailError', 'Ingresa tu correo electrónico.'); return false; }
+            if (!emailRegex.test(v)) { if (m) setError(email, 'emailError', 'Ingresa un correo electrónico válido.'); return false; }
+            setOk(email, 'emailError'); return true;
+        }
+        function valGenero(m) {
+            if (genero.value === '') { if (m) setError(genero, 'generoError', 'Selecciona una opción.'); return false; }
+            setOk(genero, 'generoError'); return true;
+        }
+        function valTelefono(m) {
+            const v = telefono.value.trim();
+            if (v === '') { setOk(telefono, 'telefonoError'); return true; }
+            const digitos = v.replace(/\s/g, '');
+            if (!/^\d{10}$/.test(digitos)) { if (m) setError(telefono, 'telefonoError', 'El teléfono debe tener 10 dígitos.'); return false; }
+            setOk(telefono, 'telefonoError'); return true;
+        }
+        function reglasPw(v) {
+            return {
+                len: v.length >= 10,
+                upper: /[A-Z]/.test(v),
+                lower: /[a-z]/.test(v),
+                num: /[0-9]/.test(v),
+                sym: /[^A-Za-z0-9]/.test(v),
+            };
+        }
+        function valPw(m) {
+            const v = pw.value;
+            const r = reglasPw(v);
+            for (const key in r) {
+                const li = document.querySelector('[data-rule="' + key + '"]');
+                if (li) li.classList.toggle('done', r[key]);
+            }
+            checkStrength(v);
+            const todas = Object.values(r).every(Boolean);
+            if (v === '') { if (m) setError(pw, 'pwError', 'Crea una contraseña.'); return false; }
+            if (!todas) { if (m) setError(pw, 'pwError', 'La contraseña no cumple todos los requisitos.'); return false; }
+            setOk(pw, 'pwError');
+            if (confirmPw.value !== '') valConfirm(true);
+            return true;
+        }
+        function valConfirm(m) {
+            if (confirmPw.value === '') { if (m) setError(confirmPw, 'confirmError', 'Confirma tu contraseña.'); return false; }
+            if (confirmPw.value !== pw.value) { if (m) setError(confirmPw, 'confirmError', 'Las contraseñas no coinciden.'); return false; }
+            setOk(confirmPw, 'confirmError'); return true;
+        }
+
         function checkStrength(val) {
             const fill = document.getElementById('strengthFill');
             const text = document.getElementById('strengthText');
@@ -149,6 +265,23 @@ unset($_SESSION['registro_error'], $_SESSION['registro_old']);
             text.style.color = l.c;
             text.textContent = l.t;
         }
+
+        nombre.addEventListener('input', () => valNombre(true));
+        apellidos.addEventListener('input', () => valApellidos(true));
+        email.addEventListener('input', () => valEmail(true));
+        genero.addEventListener('change', () => valGenero(true));
+        telefono.addEventListener('input', () => valTelefono(true));
+        pw.addEventListener('input', () => valPw(true));
+        confirmPw.addEventListener('input', () => valConfirm(true));
+
+        form.addEventListener('submit', (e) => {
+            const checks = [valNombre(true), valApellidos(true), valEmail(true), valGenero(true), valTelefono(true), valPw(true), valConfirm(true)];
+            if (checks.includes(false)) {
+                e.preventDefault();
+                const primerError = document.querySelector('.input-error');
+                if (primerError) primerError.focus();
+            }
+        });
     </script>
 </body>
 </html>
