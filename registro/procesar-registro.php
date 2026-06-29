@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 require_once '../includes/conexion.php';
 
@@ -56,7 +56,6 @@ if ($password !== $confirmPassword) {
 
 $nombreCompleto = $nombre . ' ' . $apellidos;
 
-
 if (DB_ACTIVA && $pdo) {
     try {
         $check = $pdo->prepare('SELECT id_persona FROM aprende_persona WHERE email = ? LIMIT 1');
@@ -88,7 +87,6 @@ if (DB_ACTIVA && $pdo) {
         exit;
     }
 }
-
 
 unset($_SESSION['registro_old']);
 

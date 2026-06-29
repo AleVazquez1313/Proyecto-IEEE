@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 if (isset($_SESSION['usuario_id'])) {
     header('Location: ../dashboard/dashboard.php');
@@ -48,7 +48,7 @@ unset($_SESSION['registro_error'], $_SESSION['registro_old']);
 
             <?php if ($error): ?>
                 <div class="alert alert-error">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                     <?= htmlspecialchars($error) ?>
                 </div>
             <?php endif; ?>

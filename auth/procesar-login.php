@@ -22,7 +22,6 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit;
 }
 
-
 if (DB_ACTIVA && $pdo) {
     try {
         $stmt = $pdo->prepare('SELECT id_persona, nombre, email, password FROM aprende_persona WHERE email = ? LIMIT 1');
@@ -48,7 +47,6 @@ if (DB_ACTIVA && $pdo) {
     }
 }
 
-
 $_SESSION['usuario_id'] = 0;
 $_SESSION['nombre']     = 'Usuario invitado';
 $_SESSION['email']      = $email;
@@ -56,3 +54,4 @@ $_SESSION['progreso']   = 0;
 
 header('Location: ../dashboard/dashboard.php');
 exit;
+
