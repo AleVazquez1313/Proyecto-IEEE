@@ -7,6 +7,7 @@ if (isset($_SESSION['usuario_id'])) {
 $error   = $_SESSION['recuperar_error']   ?? '';
 $success = $_SESSION['recuperar_success'] ?? false;
 unset($_SESSION['recuperar_error'], $_SESSION['recuperar_success']);
+$cssVersion = filemtime(__DIR__ . '/../assets/css/styles.css');
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -14,17 +15,14 @@ unset($_SESSION['recuperar_error'], $_SESSION['recuperar_success']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recuperar contraseña · AprendIEEQ</title>
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/css/app.css">
-    <link rel="stylesheet" href="/assets/css/auth.css">
+    <link href="../assets/images/logo.png" rel="icon">
+    <link rel="stylesheet" href="../assets/css/styles.css?v=<?= $cssVersion ?>">
 </head>
 <body>
     <aside class="auth-aside">
         <div class="auth-brand">
             <div class="auth-logo">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="2" y="3" width="20" height="18" rx="2"/><path d="M8 3v18"/><path d="M16 9l-4 4-4-4"/>
-                </svg>
+                <img src="../assets/img/logoWeb.png" alt="AprendIEEQ Logo">
             </div>
             <p class="auth-name">AprendIEEQ</p>
             <p class="auth-tagline">Instituto Electoral del Estado de Querétaro</p>
@@ -66,7 +64,7 @@ unset($_SESSION['recuperar_error'], $_SESSION['recuperar_success']);
                     </div>
                     <button type="submit" class="btn btn-primary btn-full">Enviar enlace</button>
                 </form>
-                <a href="Login.php" class="auth-link-inline">Volver al inicio de sesión</a>
+                <a href="Login.php" class="auth-link-inline auth-link-center">Volver al inicio de sesión</a>
             </div>
         <?php else: ?>
             <div class="auth-card">
@@ -83,7 +81,7 @@ unset($_SESSION['recuperar_error'], $_SESSION['recuperar_success']);
                 </div>
                 <form action="procesar-recuperar.php" method="POST">
                     <input type="hidden" name="reenviar" value="1">
-                    <button type="submit" class="btn btn-ghost btn-full" style="margin-bottom:0.75rem">Reenviar correo</button>
+                    <button type="submit" class="btn btn-ghost btn-full">Reenviar correo</button>
                 </form>
                 <a href="Login.php" class="btn btn-primary btn-full">Volver al inicio de sesión</a>
             </div>

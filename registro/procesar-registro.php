@@ -3,7 +3,7 @@ session_start();
 require_once '../includes/conexion.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: Registro.php');
+    header('Location: registro.php');
     exit;
 }
 
@@ -17,26 +17,33 @@ $confirmPassword = $_POST['confirm_password'] ?? '';
 
 $_SESSION['registro_old'] = compact('nombre', 'apellidos', 'email', 'genero', 'telefono');
 
-if ($nombre === '' || $apellidos === '' || $email === '' || $genero === '' || $password === '') {
+if ($nombre === '' || $apellidos === '' || $email === '' || $genero === '' || $telefono === '' || $password === '' || $confirmPassword === '') {
     $_SESSION['registro_error'] = 'Por favor completa todos los campos obligatorios.';
-    header('Location: Registro.php');
+    header('Location: registro.php');
     exit;
 }
 
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $_SESSION['registro_error'] = 'El formato del correo electronico no es valido.';
-    header('Location: Registro.php');
+    header('Location: registro.php');
     exit;
 }
 
-if ($telefono !== '') {
-    $telDigitos = preg_replace('/\s/', '', $telefono);
-    if (!preg_match('/^\d{10}$/', $telDigitos)) {
-        $_SESSION['registro_error'] = 'El telefono debe tener 10 digitos.';
-        header('Location: Registro.php');
-        exit;
-    }
+$generosPermitidos = ['F', 'M', 'NB', 'ND'];
+if (!in_array($genero, $generosPermitidos, true)) {
+    $_SESSION['registro_error'] = 'Selecciona un genero valido.';
+    header('Location: registro.php');
+    exit;
 }
+
+$telDigitos = preg_replace('/\D/', '', $telefono);
+if (!preg_match('/^\d{10}$/', $telDigitos)) {
+    $_SESSION['registro_error'] = 'El telefono debe tener exactamente 10 digitos numericos.';
+    header('Location: registro.php');
+    exit;
+}
+
+$telefono = $telDigitos;
 
 if (strlen($password) < 10
     || !preg_match('/[A-Z]/', $password)
@@ -44,13 +51,13 @@ if (strlen($password) < 10
     || !preg_match('/[0-9]/', $password)
     || !preg_match('/[^A-Za-z0-9]/', $password)) {
     $_SESSION['registro_error'] = 'La contrasena debe tener al menos 10 caracteres, con mayuscula, minuscula, numero y simbolo.';
-    header('Location: Registro.php');
+    header('Location: registro.php');
     exit;
 }
 
 if ($password !== $confirmPassword) {
     $_SESSION['registro_error'] = 'Las contrasenas no coinciden.';
-    header('Location: Registro.php');
+    header('Location: registro.php');
     exit;
 }
 
@@ -63,7 +70,7 @@ if (DB_ACTIVA && $pdo) {
 
         if ($check->fetch()) {
             $_SESSION['registro_error'] = 'Este correo ya esta registrado. Intenta iniciar sesion.';
-            header('Location: Registro.php');
+            header('Location: registro.php');
             exit;
         }
 
@@ -83,7 +90,7 @@ if (DB_ACTIVA && $pdo) {
         exit;
     } catch (PDOException $e) {
         $_SESSION['registro_error'] = 'Ocurrio un error al registrar. Intenta de nuevo.';
-        header('Location: Registro.php');
+        header('Location: registro.php');
         exit;
     }
 }

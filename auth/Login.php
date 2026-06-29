@@ -6,6 +6,7 @@ if (isset($_SESSION['usuario_id'])) {
 }
 $error = $_SESSION['login_error'] ?? '';
 unset($_SESSION['login_error']);
+$cssVersion = filemtime(__DIR__ . '/../assets/css/styles.css');
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -13,19 +14,16 @@ unset($_SESSION['login_error']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar sesión · AprendIEEQ</title>
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/css/app.css">
-    <link rel="stylesheet" href="/assets/css/auth.css">
+    <link href="../assets/images/logo.png" rel="icon">
+    <link rel="stylesheet" href="../assets/css/styles.css?v=<?= $cssVersion ?>">
+
+
 </head>
 <body>
     <aside class="auth-aside">
         <div class="auth-brand">
             <div class="auth-logo">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="2" y="3" width="20" height="18" rx="2"/>
-                    <path d="M8 3v18"/>
-                    <path d="M16 9l-4 4-4-4"/>
-                </svg>
+                <img src="../assets/img/logoWeb.png" alt="AprendIEEQ Logo">
             </div>
             <p class="auth-name">AprendIEEQ</p>
             <p class="auth-tagline">Instituto Electoral del Estado de Querétaro</p>
@@ -78,7 +76,7 @@ unset($_SESSION['login_error']);
             </form>
 
             <div class="auth-links">
-                <a href="../registro/Registro.php" class="auth-link-inline">Registrarse</a>
+                <a href="../registro/registro.php" class="auth-link-inline">Registrarse</a>
                 <a href="recuperar-password.php" class="auth-link-inline">¿Olvidaste tu contraseña?</a>
             </div>
 

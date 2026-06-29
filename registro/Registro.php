@@ -7,6 +7,7 @@ if (isset($_SESSION['usuario_id'])) {
 $error = $_SESSION['registro_error'] ?? '';
 $old   = $_SESSION['registro_old']   ?? [];
 unset($_SESSION['registro_error'], $_SESSION['registro_old']);
+$cssVersion = filemtime(__DIR__ . '/../assets/css/styles.css');
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -14,17 +15,14 @@ unset($_SESSION['registro_error'], $_SESSION['registro_old']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crear cuenta · AprendIEEQ</title>
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/css/app.css">
-    <link rel="stylesheet" href="/assets/css/auth.css">
+    <link href="../assets/images/logo.png" rel="icon">
+    <link rel="stylesheet" href="../assets/css/styles.css?v=<?= $cssVersion ?>">
 </head>
 <body>
     <aside class="auth-aside">
         <div class="auth-brand">
             <div class="auth-logo">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="2" y="3" width="20" height="18" rx="2"/><path d="M8 3v18"/><path d="M16 9l-4 4-4-4"/>
-                </svg>
+                <img src="../assets/img/logoWeb.png" alt="AprendIEEQ Logo">
             </div>
             <p class="auth-name">AprendIEEQ</p>
             <p class="auth-tagline">Instituto Electoral del Estado de Querétaro</p>
@@ -57,30 +55,30 @@ unset($_SESSION['registro_error'], $_SESSION['registro_old']);
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Nombre(s)</label>
-                        <input class="form-input" type="text" name="nombre" id="nombre" placeholder="Abraham" value="<?= htmlspecialchars($old['nombre'] ?? '') ?>">
+                        <input class="form-input" type="text" name="nombre" id="nombre" placeholder="Abraham" value="<?= htmlspecialchars($old['nombre'] ?? '') ?>" required>
                         <span class="field-error" id="nombreError"></span>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Apellidos</label>
-                        <input class="form-input" type="text" name="apellidos" id="apellidos" placeholder="Ordóñez Moreno" value="<?= htmlspecialchars($old['apellidos'] ?? '') ?>">
+                        <input class="form-input" type="text" name="apellidos" id="apellidos" placeholder="Ordóñez Moreno" value="<?= htmlspecialchars($old['apellidos'] ?? '') ?>" required>
                         <span class="field-error" id="apellidosError"></span>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Correo electrónico</label>
-                    <input class="form-input" type="email" name="email" id="email" placeholder="tucorreo@ejemplo.com" value="<?= htmlspecialchars($old['email'] ?? '') ?>">
+                    <input class="form-input" type="email" name="email" id="email" placeholder="tucorreo@ejemplo.com" value="<?= htmlspecialchars($old['email'] ?? '') ?>" required>
                     <span class="field-error" id="emailError"></span>
                     <div class="form-note">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                        Verifica que sea un correo válido al que tengas acceso
+                        Verifica que sea un correo válido y no repetido
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Género</label>
-                        <select class="form-select" name="genero" id="genero">
+                        <select class="form-select" name="genero" id="genero" required>
                             <option value="">Seleccionar...</option>
                             <option value="F"  <?= ($old['genero'] ?? '') === 'F'  ? 'selected' : '' ?>>Femenino</option>
                             <option value="M"  <?= ($old['genero'] ?? '') === 'M'  ? 'selected' : '' ?>>Masculino</option>
@@ -91,7 +89,7 @@ unset($_SESSION['registro_error'], $_SESSION['registro_old']);
                     </div>
                     <div class="form-group">
                         <label class="form-label">Teléfono</label>
-                        <input class="form-input" type="tel" name="telefono" id="telefono" placeholder="442 000 0000" maxlength="14" value="<?= htmlspecialchars($old['telefono'] ?? '') ?>">
+                        <input class="form-input" type="tel" name="telefono" id="telefono" placeholder="4420000000" maxlength="10" inputmode="numeric" pattern="\d{10}" value="<?= htmlspecialchars($old['telefono'] ?? '') ?>" required>
                         <span class="field-error" id="telefonoError"></span>
                     </div>
                 </div>
@@ -99,7 +97,7 @@ unset($_SESSION['registro_error'], $_SESSION['registro_old']);
                 <div class="form-group">
                     <label class="form-label">Contraseña</label>
                     <div class="pw-wrap">
-                        <input class="form-input" type="password" name="password" id="pw" placeholder="Crea una contraseña segura">
+                        <input class="form-input" type="password" name="password" id="pw" placeholder="Crea una contraseña segura" minlength="10" required>
                         <button type="button" class="pw-eye" onclick="togglePw('pw')" aria-label="Mostrar contraseña">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                         </button>
@@ -121,7 +119,7 @@ unset($_SESSION['registro_error'], $_SESSION['registro_old']);
                 <div class="form-group">
                     <label class="form-label">Confirmar contraseña</label>
                     <div class="pw-wrap">
-                        <input class="form-input" type="password" name="confirm_password" id="confirmPw" placeholder="Repite tu contraseña">
+                        <input class="form-input" type="password" name="confirm_password" id="confirmPw" placeholder="Repite tu contraseña" minlength="10" required>
                         <button type="button" class="pw-eye" onclick="togglePw('confirmPw')" aria-label="Mostrar contraseña">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                         </button>
@@ -163,7 +161,7 @@ unset($_SESSION['registro_error'], $_SESSION['registro_old']);
         const confirmPw = document.getElementById('confirmPw');
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const soloLetras = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+$/;
+        const generosValidos = ['F', 'M', 'NB', 'ND'];
 
         function setError(input, id, msg) {
             input.classList.add('input-error');
@@ -183,15 +181,11 @@ unset($_SESSION['registro_error'], $_SESSION['registro_old']);
         function valNombre(m) {
             const v = nombre.value.trim();
             if (v === '') { if (m) setError(nombre, 'nombreError', 'Ingresa tu nombre.'); return false; }
-            if (v.length < 2) { if (m) setError(nombre, 'nombreError', 'El nombre es muy corto.'); return false; }
-            if (!soloLetras.test(v)) { if (m) setError(nombre, 'nombreError', 'El nombre solo debe contener letras.'); return false; }
             setOk(nombre, 'nombreError'); return true;
         }
         function valApellidos(m) {
             const v = apellidos.value.trim();
             if (v === '') { if (m) setError(apellidos, 'apellidosError', 'Ingresa tus apellidos.'); return false; }
-            if (v.length < 2) { if (m) setError(apellidos, 'apellidosError', 'El apellido es muy corto.'); return false; }
-            if (!soloLetras.test(v)) { if (m) setError(apellidos, 'apellidosError', 'Los apellidos solo deben contener letras.'); return false; }
             setOk(apellidos, 'apellidosError'); return true;
         }
         function valEmail(m) {
@@ -201,14 +195,13 @@ unset($_SESSION['registro_error'], $_SESSION['registro_old']);
             setOk(email, 'emailError'); return true;
         }
         function valGenero(m) {
-            if (genero.value === '') { if (m) setError(genero, 'generoError', 'Selecciona una opción.'); return false; }
+            if (!generosValidos.includes(genero.value)) { if (m) setError(genero, 'generoError', 'Selecciona una opción válida.'); return false; }
             setOk(genero, 'generoError'); return true;
         }
         function valTelefono(m) {
             const v = telefono.value.trim();
-            if (v === '') { setOk(telefono, 'telefonoError'); return true; }
-            const digitos = v.replace(/\s/g, '');
-            if (!/^\d{10}$/.test(digitos)) { if (m) setError(telefono, 'telefonoError', 'El teléfono debe tener 10 dígitos.'); return false; }
+            if (v === '') { if (m) setError(telefono, 'telefonoError', 'Ingresa tu teléfono.'); return false; }
+            if (!/^\d{10}$/.test(v)) { if (m) setError(telefono, 'telefonoError', 'El teléfono debe tener exactamente 10 dígitos numéricos.'); return false; }
             setOk(telefono, 'telefonoError'); return true;
         }
         function reglasPw(v) {
@@ -270,7 +263,10 @@ unset($_SESSION['registro_error'], $_SESSION['registro_old']);
         apellidos.addEventListener('input', () => valApellidos(true));
         email.addEventListener('input', () => valEmail(true));
         genero.addEventListener('change', () => valGenero(true));
-        telefono.addEventListener('input', () => valTelefono(true));
+        telefono.addEventListener('input', () => {
+            telefono.value = telefono.value.replace(/\D/g, '').slice(0, 10);
+            valTelefono(true);
+        });
         pw.addEventListener('input', () => valPw(true));
         confirmPw.addEventListener('input', () => valConfirm(true));
 
